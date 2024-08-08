@@ -1,10 +1,12 @@
-const asyncHandler=(requestHandler)=>{
-   return (req,res,next)=>{
-        Promise.resolve(requestHandler(req,res,next)).catch((err)=>next(err));
-    }
-}
+// async handler is a custom async handling function which is dedicated to handle web request .
 
-export {asyncHandler}
+const asyncHandler = (requestHandler) => {
+  return (req, res, next) => {
+    Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err));
+  };
+};
+
+export { asyncHandler };
 
 /*
 this is one of the way to make a wrapper function fo rvarious other functionality
