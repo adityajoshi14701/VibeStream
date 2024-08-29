@@ -79,9 +79,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 
 const getLikedVideos = asyncHandler(async (req, res) => {
   //TODO: get all liked videos
-  // get user id
-  // after fetch all the liked content by user
-  // filter out the videos form content
+
   const userId = req.user._id;
   if (!isValidObjectId(userId)) throw new ApiError("400", "Invalid user ");
   const content = Like.find({ likedBy: userId });

@@ -19,20 +19,72 @@ const publishAVideo = asyncHandler(async (req, res) => {
 const getVideoById = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
   //TODO: get video by id
+  if (!isValidObjectId(videoId)) throw new ApiError(500, "Invalid Video !!");
+
+  const video = Video.findById({ id: videoId });
+  if (!video) return res.send(404, "Vidoe not found!!");
+  return res.send(200).json(new ApiResponse(201, video, "Video fetched!!"));
 });
 
 const updateVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
   //TODO: update video details like title, description, thumbnail
+  if (!isValidObjectId(videoId))
+    throw new ApiError(400, "Invalid Video Access");
+  const { title, description, thumbnail } = req?.body;
+  const response = Video.findByIdAndUpdate({
+    $set: {
+      title: title,
+      description: description,
+      thumbnail: thumbnail,
+    },
+  });
+  if (!response)
+    return res
+      .send(500)
+      .json(
+        new ApiError(500, "Internal Server error(Video cannot be updated)"),
+      );
+  return res
+    .send(200)
+    .json(new ApiResponse(201, {}, "Video Updated Successfully!!"));
 });
 
 const deleteVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
   //TODO: delete video
+  if (!isValidObjectId(videoId)) throw new ApiError(400, "Invalid Video Id");
+  const response = Video.findByIdAndDelete({ id: videoId });
+  if (!response)
+    return res
+      .send(500)
+      .json(new ApiError(500, "Internal Server Error (deletion of video"));
+
+  return res
+    .send(200)
+    .json(new ApiResponse(201, {}, "Video Deleted successfully!!"));
 });
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
+  if (!isValidObjectId(videoId)) throw new ApiError(400, "Invalid Vido Id");
+  const video = Video.findByIdAndUpdate(
+    { id: videoId },
+    {
+      $set: {
+        isPublished: !isPublished,
+      },
+    },
+  );
+  return res
+    .send(200)
+    .json(
+      new ApiResponse(
+        200,
+        { video },
+        "Updated Published status successfully!!",
+      ),
+    );
 });
 
 export {

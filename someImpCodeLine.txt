@@ -1,0 +1,10 @@
+let users = await Users.find({}).sort({ createdAt: -1 }).skip(limit * page).limit(limit).select("fields you want to select separated by space")
+  const count = await Users.countDocuments(query);
+  let obj = {
+    Users: users,
+    total: count,
+    limit: limit,
+    page: page + 1
+  }
+1
+// to sort data and paginate it according to the time of creation
