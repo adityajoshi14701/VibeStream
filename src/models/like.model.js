@@ -24,4 +24,4 @@ const likeSchema = Schema(
   },
 );
 
-export const Like = mongo.MongoDBCollectionNamespace("Like", likeSchema);
+export const Like = mongoose.model("Like", likeSchema);

@@ -10,8 +10,11 @@ import mongoose from "mongoose";
 const generateAccessAndRefereshTokens = async (userId) => {
   try {
     const user = await User.findById(userId);
-    const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
+
+    const accessToken = await user.generateAccessToken();
+    //console.log("Access token generated", accessToken);
+    const refreshToken = await user.generateRefreshToken();
+    // console.log("Refresh token generated", refreshToken);
 
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
@@ -37,7 +40,7 @@ const registerUser = asyncHandler(async (req, res) => {
   // return res
 
   const { fullName, email, username, password } = req.body;
-  //console.log("email: ", email);
+  console.log(req.body);
 
   if (
     [fullName, email, username, password].some((field) => field?.trim() === "")
@@ -83,7 +86,7 @@ const registerUser = asyncHandler(async (req, res) => {
     coverImage: coverImage?.url || "",
     email,
     password,
-    username: username.toLowerCase(),
+    userName: username.toLowerCase(),
   });
 
   const createdUser = await User.findById(user._id).select(
@@ -108,7 +111,6 @@ const loginUser = asyncHandler(async (req, res) => {
   //send cookie
 
   const { email, username, password } = req.body;
-  console.log(email);
 
   if (!username && !email) {
     throw new ApiError(400, "username or email is required");
@@ -135,9 +137,11 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid user credentials");
   }
 
+  console.log(user._id);
   const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(
     user._id,
   );
+
   // check wether performing a db call is need or updating the existing user object can suffice
   const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken",
@@ -196,16 +200,20 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
     req.cookies.refreshToken || req.body.refreshToken;
 
+  console.log(incomingRefreshToken);
   if (!incomingRefreshToken) {
+    console.log("Invalid");
     throw new ApiError(401, "unauthorized request");
   }
-
+  console.log("entring try blcok");
   try {
+    console.log(process.env.REFRESH_TOKEN_SCERET);
     const decodedToken = jwt.verify(
       incomingRefreshToken,
-      process.env.REFRESH_TOKEN_SECRET,
+      process.env.REFRESH_TOKEN_SCERET,
     );
 
+    console.log("token decoded : ", decodedToken);
     const user = await User.findById(decodedToken?._id);
 
     if (!user) {
@@ -236,6 +244,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         ),
       );
   } catch (error) {
+    console.log(error);
     throw new ApiError(401, error?.message || "Invalid refresh token");
   }
 });
@@ -259,14 +268,18 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
+  console.log("entered");
+  const user = req.user;
+  console.log(user);
   return res
     .status(200)
-    .json(new ApiResponse(200, req.user, "User fetched successfully"));
+    .json(new ApiResponse(200, user, "User fetched successfully"));
 });
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
+  console.log("Entering ");
   const { fullName, email } = req.body;
-
+  console.log(fullName, email);
   if (!fullName || !email) {
     throw new ApiError(400, "All fields are required");
   }
